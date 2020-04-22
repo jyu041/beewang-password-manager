@@ -1,6 +1,0 @@
-20/April/2020 - Version 1:
-
- - Created register function
- - Created login function
- - Created option menu
- - Created encryption function
