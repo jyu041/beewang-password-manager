@@ -1,17 +1,22 @@
-# main.py - Version 4
+# main.py - Version 5
 # Login/register to store logins and passwords for websites
 # Bee.Wang, 21 April 2020
 
 
 import string, os, sys, hashlib, base64, time, random
 
+print(sys.argv)
+
 # Variables to be declared at the start of the program when it runs for some default values
 no_option_list = ['There is no such option avaliable, please enter again!','You have entered an invalid option, please try again!','Your option is invalid, please enter again!','There is no option for what you have entered, try again!']
 user_access_granted = False
 can_log_in = False
 
-# Below here is the windows title, this can be changed anytime
-windows_title = 'BeeWang Password Manager' 
+# Default settings for some visuals and support functions
+auto_login_after_register = True
+console_color = '0b' # Windows Only
+windows_title = 'BeeWang-Password-Manager' # Windows Only
+
 
 # Uses world grade MD5 encryption to encrypt data througout the program
 def encrypt(item_to_encrypt):
@@ -26,23 +31,46 @@ def clean():
     os.system('cls' if os.name=='nt' else 'clear')
 
 
-# Changes Terminal title for windows users
-def change_title():
-    os.system(f'title {windows_title}' if os.name == 'nt' else '\n')
-
-
 def exit_program():
     print(f'\n    Thank you for using {windows_title}, you can close this window now')
     sys.exit()
 
 
 def restart_program():
+    """
     if os.name == 'nt':
         print('\n    Restarting program...')
         os.execl(sys.executable, sys.executable, *sys.argv)
     else:
         clean()
-        print('\n    Sorry but this function is currently only for windows users')
+        print('\n    Sorry but this function is currently only for windows users')"""
+    #os.execv(__file__, sys.argv)
+    #os.execv(__file__, ['restart'])
+    print("    argv was", sys.argv)
+    print("    sys.executable was", sys.executable)
+    print("    restarting now")
+    os.execv(sys.executable, ['python'] + sys.argv)
+
+
+def auto_settings():
+    # title settings
+    os.system(f'title {windows_title}' if os.name == 'nt' else '\n')
+    # color settings:
+    os.system(f'color {console_color}')
+
+
+# This encoding function encodes the user data in base64, and then returns it
+def data_encode(encodedStr):
+    for i in range(8):
+        encodedStr = str(base64.b64encode(encodedStr.encode("utf-8")), "utf-8")
+    return str(encodedStr)
+
+
+# This decoding functions decodes the encrypted data and then returns it
+def data_decode(decodedStr):
+    for i in range(8):
+        decodedStr = base64.b64decode(decodedStr).decode("utf-8")
+    return str(decodedStr)
 
 
 def logout_func(auth_key):
@@ -121,11 +149,15 @@ def register_func():
         print('    ==================================================\n')
         time.sleep(3)
         clean()
-        print(f'\n    Your account: "{login}" has been created! and you have been automatically logged in')
+        
         global user_access_granted
         global login_username
-        user_access_granted = True
-        login_username = login
+        if auto_login_after_register:
+            user_access_granted = True
+            login_username = login
+            print(f'\n    Your account: "{login}" has been created! and you have been automatically logged in')
+        else:
+            print('\n    Auto login has been disabled, you may change this in the settings options')
         f_register.close()
 
 
@@ -181,17 +213,7 @@ def login_func():
         print('\n    * Sorry but there are currently no accounts registered, please register an account first before coming')
 
 
-# This encoding function encodes the user data in base64, and then returns it
-def data_encode(encodedStr):
-    for i in range(8):
-        encodedStr = str(base64.b64encode(encodedStr.encode("utf-8")), "utf-8")
-    return str(encodedStr)
 
-# This decoding functions decodes the encrypted data and then returns it
-def data_decode(decodedStr):
-    for i in range(8):
-        decodedStr = base64.b64decode(decodedStr).decode("utf-8")
-    return str(decodedStr)
 
 
 def store_details(auth_key):
@@ -238,27 +260,20 @@ def store_details(auth_key):
 
 
 def del_line(line_item):
-    written_lines = []
-    with open(f'./users/{encrypt(login_username)}', "r") as f:
-        lines = f.readlines()
-    with open(f'./users/{encrypt(login_username)}', "w") as f:
-        for line in lines:
-            if len(written_lines) == 0:
-                if not line.strip("\n").startswith(line_item):
-                    f.write(line)
-                else:
-                    written_lines.append('x')
-            else:
-                f.write(line)
+    with open(f'./users/{encrypt(login_username)}', "r") as f_read:
+        lines = f_read.readlines()
+    with open(f'./users/{encrypt(login_username)}', "w") as f_write:
+        for i, line in enumerate(lines):
+            if i not in line_item:
+                f_write.write(line)
 
 
 def read_details(auth_key):
     if auth_key:
         while True:
             if os.path.isdir('./users') == False:
-                print('\n    The program have detected that the folder that stores all \n    encrypted details has been deleted, all lost data cannot be\n    recovered using this program, but the missing files to run\n    this program has been re-created, please continue freely,\n    if you know what is happening you may ignore this message')
-            elif os.path.isfile(f'./users{encrypt(login_username)}') == False:
-                print('\n    The file that stores the login details for current account\n    does not exist or has been deleted, information lost can not\n    be recovered, we are very sorry for what has happened to \n    your data, if you know what is happening you may ignore  \n    this message and continue, also that the missing file has been \nrecreated but will be empty until you start to store information inside it')
+                print('\n    The file that stores the login details for current account\n    does not exist or has been deleted, information lost can not\n    be recovered, we are very sorry for what has happened to \n    your data, if you know what is happening you may ignore  \n    this message and continue, also that the missing file has been \n    recreated but will be empty until you start to store \n    information inside it')
+                break
             else:
                 clean()
                 print('    Your login details are displayed below:')
@@ -278,13 +293,18 @@ def read_details(auth_key):
 
                     print('\n    Actions that can be performed:\n    1. Remove login details by line number, usage: "!a (number for website)"')
                     read_menu_commands = input('\n    Enter your command >> ')
-                    if read_menu_commands.startswith('!a '):
-                        numbers = read_menu_commands.replace('!a ','').strip(' ').split(' ')
-                        temp_line = data_encode(str(full_details[int(numbers[0]) - 1][0]))
-                        print(f'    Attempt to delete line "{int(numbers[0])}" gave a response of "{del_line(temp_line)}"')
+                    # Bulk delete items in login details:
+                    if read_menu_commands.startswith('!del '):
+                        numbers = read_menu_commands.replace('!del ','').strip(' ').split(' ')
+                        for i in range(len(numbers)):
+                            numbers[i] = int(numbers[i]) - 1
+                        
+                        del_line(numbers)
                 else:
                     f_account.close()
-                    print('\n    You do not have stored login details in your files')
+                    clean()
+                    print('\n    * You do not have stored login details in your files')
+                    break
 
     else:
         clean()
@@ -331,7 +351,7 @@ def menu():
 
 
 try:
-    change_title() # Change title function is only for windows user right now, this could change in the future
+    auto_settings()
     menu()
 except KeyboardInterrupt:
     print('\n\n    User Closed Program')

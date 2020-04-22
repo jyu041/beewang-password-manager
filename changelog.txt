@@ -1,3 +1,10 @@
+22/April/2020 - Version 5:
+
+ - Minor bug fixes
+ - Changed the restart function
+ - Can now bulk delete stored login details 
+ - Attempeted to create single user preferrences (removed, because was too hard)
+
 21/April/2020 - Version 4:
  - Created function to read stored login details
  - Created funtciton to delete login details
@@ -6,7 +13,6 @@
  - Automatically changes console title to a set name in the code (currently windows only)
  - More file integrity detection
  - Minor changes to strings for information towards users
- - 
 
 21/April/2020 - Version 3:
 
