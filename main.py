@@ -1,4 +1,4 @@
-# main.py - Version 2
+# main.py - Version 3
 # Login/register to store logins and passwords for websites
 # Bee.Wang, 21 April 2020
 
@@ -69,12 +69,12 @@ def register_func():
     f_register.close()
     with open('accounts.txt','r+') as f_register:
         print('    Please enter information below:\n')
-        print('    Your username must: \n    - only contain lower case letters and numbers\n    - no special characters allowed\n    - longer than 8 (eight) digits\n\n    You may type "end" to cancel the register process')
+        print('    Your username must: \n    - only contain lower case letters and numbers\n    - no special characters allowed\n    - longer than 8 (eight) digits\n\n    You may type "!end" to cancel the register process')
         while True:
             login = str(input('    Enter your username here >> ')).lower()
             if encrypt(login) in f_register.read():
                 print('\n    * There is already an account with this username!\n    Please login with it or make an account with a different username!')
-            elif login == 'end':
+            elif login == '!end':
                 clean()
                 print('\n    * You have cancelled to register an acocunt!')
                 return
@@ -167,11 +167,51 @@ def login_func():
     else:
         clean()
         print('\n    * Sorry but there are currently no accounts registered, please register an account first before coming')
+    
+    return login_username
+
+
+# This encoding function encodes the user data in base64, and then returns it
+def data_encode(encodedStr):
+    for i in range(8):
+        encodedStr = str(base64.b64encode(encodedStr.encode("utf-8")), "utf-8")
+    return str(encodedStr)
+
+
+def data_decode(decodeStr):
+    for i in range(8):
+        decodedStr = base64.b64decode(decodedStr).decode("utf-8")
+    return str(decodedStr)
 
 
 def store_password(auth_key):
     if auth_key:
-        print('    * WORKING *')
+        if os.path.isdir('./users') == False:
+            os.mkdir('./users')
+            print('\n    The program have detected that the folder that stores all \n    encrypted details has been deleted, all lost data cannot be\n    recovered using this program, but the missing files to run\n    this program has been re-created, please continue freely,\n    if you know what is happening you may ignore this message')
+
+        f_account = open(f'./users/{encrypt(login_username)}','a+')
+        written_amount = []
+        while True:
+            print('\n    You can store your logins and passwords here!\n    Note that this process could be slow, because it is encrypting your data\n    Type "!end" to stop entering login details\n')
+            store_site = str(input('    Website to store for >> '))
+            if store_site != '!end':
+                encoded_store_site = data_encode(store_site)
+                store_user = data_encode(str(input('    Username to store for >> ')))
+                store_pwd = data_encode(str(input('    Password to store for >> ')))
+                f_account.write(f'{encoded_store_site}<>{store_user}<>{store_pwd}\n')
+                written_amount.append('x')
+            else:
+                clean()
+                if len(written_amount) == 0:
+                    print('\n    You have cancelled to store any login details')
+                elif len(written_amount) == 1:
+                    print(f'\n    You have stored {len(written_amount)} login detail')
+                else:
+                    print(f'\n    You have stored {len(written_amount)} login detail')
+                
+                break
+        f_account.close()
     else:
         clean()
         print('\n    * You are not logged in, you must log in to store passwords privately!')
@@ -214,4 +254,4 @@ try:
     change_title() # Change title function is only for windows user right now, this could change in the future
     menu()
 except KeyboardInterrupt:
-    print('\n    User Closed Program')
+    print('\n\n    User Closed Program')

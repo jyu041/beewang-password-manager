@@ -1,3 +1,11 @@
+21/April/2020 - Version 3:
+
+ - Made the storing data function ready to work
+ - Added base64 encryption function
+ - Added base64 decryption function
+ - Added file integrity detection inside storing data function (this could be changed and improved)
+ - Minor changes within strings to inform user correctly
+
 21/April/2020 - Version 2:
 
  - Created log out function
