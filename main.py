@@ -1,11 +1,11 @@
-# main.py - Version 5
+# main.py - Version 6
 # Login/register to store logins and passwords for websites
-# Bee.Wang, 21 April 2020
+# Bee.Wang, 22 April 2020
 
 
 import string, os, sys, hashlib, base64, time, random
 
-print(sys.argv)
+print('    ' + str(sys.argv))
 
 # Variables to be declared at the start of the program when it runs for some default values
 no_option_list = ['There is no such option avaliable, please enter again!','You have entered an invalid option, please try again!','Your option is invalid, please enter again!','There is no option for what you have entered, try again!']
@@ -13,7 +13,7 @@ user_access_granted = False
 can_log_in = False
 
 # Default settings for some visuals and support functions
-auto_login_after_register = True
+auto_login_after_register = True # Change this to false if you would want to disable auto login after register
 console_color = '0b' # Windows Only
 windows_title = 'BeeWang-Password-Manager' # Windows Only
 
@@ -21,8 +21,10 @@ windows_title = 'BeeWang-Password-Manager' # Windows Only
 # Uses world grade MD5 encryption to encrypt data througout the program
 def encrypt(item_to_encrypt):
     for i in range(8):
+        print(f'    Encrypting pass: {i+1}', end='\r')
         item_to_encrypt = hashlib.md5(item_to_encrypt.encode())
         item_to_encrypt = str(item_to_encrypt.hexdigest())
+    print('                                             ', end='\r')
     return str(item_to_encrypt)
 
 
@@ -37,16 +39,9 @@ def exit_program():
 
 
 def restart_program():
-    """
-    if os.name == 'nt':
-        print('\n    Restarting program...')
-        os.execl(sys.executable, sys.executable, *sys.argv)
-    else:
-        clean()
-        print('\n    Sorry but this function is currently only for windows users')"""
     #os.execv(__file__, sys.argv)
     #os.execv(__file__, ['restart'])
-    print("    argv was", sys.argv)
+    print("\n    argv was", sys.argv)
     print("    sys.executable was", sys.executable)
     print("    restarting now")
     os.execv(sys.executable, ['python'] + sys.argv)
@@ -62,14 +57,18 @@ def auto_settings():
 # This encoding function encodes the user data in base64, and then returns it
 def data_encode(encodedStr):
     for i in range(8):
+        print(f'    Encoding process count: {i+1}', end='\r')
         encodedStr = str(base64.b64encode(encodedStr.encode("utf-8")), "utf-8")
+    print('                                             ', end='\r')
     return str(encodedStr)
 
 
 # This decoding functions decodes the encrypted data and then returns it
 def data_decode(decodedStr):
     for i in range(8):
+        print(f'    Decoding process count: {i+1}', end='\r')
         decodedStr = base64.b64decode(decodedStr).decode("utf-8")
+    print('                                             ', end='\r')
     return str(decodedStr)
 
 
@@ -99,8 +98,9 @@ def logout_func(auth_key):
 
 def register_func():
     # These two lines outside of the with is to create the file "accounts.txt" if it doesnt exist
-    f_register = open('accounts.txt','a+')
-    f_register.close()
+    #f_register = open('accounts.txt','a+')
+    with open('accounts.txt','a+') as f_register:
+        f_register.close()
     with open('accounts.txt','r+') as f_register:
         print('    Please enter information below:\n')
         print('    Your username must: \n    - only contain lower case letters and numbers\n    - no special characters allowed\n    - longer than 8 (eight) digits\n\n    You may type "!end" to cancel the register process')
@@ -140,12 +140,13 @@ def register_func():
             print('    Account already exists in file directories!')
         else:
             print('    Creating files for current user!')
-            acc_f = open(f'./users/{encrypt(login)}','a+')
-            if os.path.isfile(f'./users/{encrypt(login)}'):
-                print('\n    Succesfully created')
-            else:
-                print('\n    FATAL ERROR: Failed to create file, this problem should not exist, but it just happened, so ah... idk help yourself')
-            acc_f.close()
+            #acc_f = open(f'./users/{encrypt(login)}','a+')
+            with open(f'./users/{encrypt(login)}','a+') as acc_f:
+                if os.path.isfile(f'./users/{encrypt(login)}'):
+                    print('\n    Succesfully created')
+                else:
+                    print('\n    FATAL ERROR: Failed to create file, this problem should not exist, but it just happened, so ah... idk help yourself')
+                acc_f.close()
         print('    ==================================================\n')
         time.sleep(3)
         clean()
@@ -173,6 +174,10 @@ def login_func():
                     if len(save_login_details_hashed) == 0:
                         print('\n    Enter your login details below:')
                         login_username = str(input('    Username >> ')).lower()
+                        if login_username == '!end':
+                            clean()
+                            print('\n    User cancelled login process')
+                            return 
                     
                         if len(save_login_details_hashed) == 0:
                             for lines in f_login_files:
@@ -214,36 +219,42 @@ def login_func():
 
 
 
-
-
 def store_details(auth_key):
     if auth_key:
         if os.path.isdir('./users') == False:
             os.mkdir('./users')
             print('\n    The program have detected that the folder that stores all \n    encrypted details has been deleted, all lost data cannot be\n    recovered using this program, but the missing files to run\n    this program has been re-created, please continue freely,\n    if you know what is happening you may ignore this message')
 
-        f_account = open(f'./users/{encrypt(login_username)}','a+')
-        written_amount = []
-        print('\n    You can store your logins and passwords here!\n    Note that this process could be slow, because it is encrypting your data\n    Type "!end" to stop entering login details\n')
-        while True:
-            store_site = str(input('    Website to store for >> '))
-            if store_site == '!end':
-                break
+        with open(f'./users/{encrypt(login_username)}','a+') as f_account:
+            with open(f'./users/{encrypt(login_username)}','r') as f_detail_len:
+                lines_of_details = f_detail_len.read()
+                if len(lines_of_details) > 9999:
+                    clean()
+                    time.sleep(4)
+                    print('\n    FATAL ISSUE: You have reached the maximum login details that one account can store!\n    Please remove unwanted login details from "view login details"\n    Or create a new account!')
+                    return
 
-            store_user = str(input('    Username to store for >> '))
-            if store_user == '!end':
-                break
+                written_amount = []
+                print('\n    You can store your logins and passwords here!\n    Note that this process could be slow, because it is encrypting your data\n    Type "!end" to stop entering login details\n')
+                while True:
+                    store_site = str(input('    Website to store for >> '))
+                    if store_site == '!end':
+                        break
 
-            store_pwd = str(input('    Password to store for >> '))
-            if store_pwd == '!end':
-                break
+                    store_user = str(input('    Username to store for >> '))
+                    if store_user == '!end':
+                        break
 
-            encoded_store_site = data_encode(store_site)
-            encoded_store_user = data_encode(store_user)
-            encoded_store_pwd = data_encode(store_pwd)
-            f_account.write(f'{encoded_store_site}<>{encoded_store_user}<>{encoded_store_pwd}\n')
-            written_amount.append('x')
-            print('\n    Details Stored Successfuly\n')
+                    store_pwd = str(input('    Password to store for >> '))
+                    if store_pwd == '!end':
+                        break
+
+                    encoded_store_site = data_encode(store_site)
+                    encoded_store_user = data_encode(store_user)
+                    encoded_store_pwd = data_encode(store_pwd)
+                    f_account.write(f'{encoded_store_site}<>{encoded_store_user}<>{encoded_store_pwd}\n')
+                    written_amount.append('x')
+                    print('\n    Details Stored Successfuly\n')
 
         clean()
         if len(written_amount) == 0:
@@ -268,6 +279,31 @@ def del_line(line_item):
                 f_write.write(line)
 
 
+def change_line(item_list):
+    """ 
+    with open(f'./users/{encrypt(login_username)}', "r") as f_read:
+        lines = f_read.readlines()
+        num_lines = sum(1 for line in open(f'./users/{encrypt(login_username)}','r'))
+    with open(f'./users/{encrypt(login_username)}', "w") as f_write:
+        for i in range(num_lines):
+            if i == item_list[0]:
+                f_write.write(f'{data_encode(item_list[1])}<>{data_encode(item_list[2])}<>{data_encode(item_list[3])}')
+            else:
+                f_write.write(lines[i])"""
+
+    file_read = open(f'./users/{encrypt(login_username)}', "r")
+    lines = file_read.readlines()
+    file_read.close()
+
+    with open(f'./users/{encrypt(login_username)}', "w") as file_write:
+        num_sum = item_list[0].strip(' ').replace(' ','')
+        for i, line_data in enumerate(lines):
+            if i + 1 != int(num_sum):
+                file_write.write(line_data)
+            else:
+                file_write.write(f'{data_encode(item_list[1])}<>{data_encode(item_list[2])}<>{data_encode(item_list[3])}\n')
+
+
 def read_details(auth_key):
     if auth_key:
         while True:
@@ -276,35 +312,53 @@ def read_details(auth_key):
                 break
             else:
                 clean()
-                print('    Your login details are displayed below:')
-                f_account = open(f'./users/{encrypt(login_username)}','r')
-                full_details = []
-                for lines in f_account:
-                    line_info = lines.split('<>')
-                    line_detail = []
-                    for details in line_info:
-                        line_detail.append(data_decode(details))
-                    full_details.append(line_detail)
+                print('\n    Your login details are displayed below:')
+                with open(f'./users/{encrypt(login_username)}','r') as f_account:
+                    full_details = []
+                    for lines in f_account:
+                        line_info = lines.split('<>')
+                        line_detail = []
+                        for details in line_info:
+                            line_detail.append(data_decode(details))
+                        full_details.append(line_detail)
 
-                if len(full_details) > 0:
-                    print('\n        Websites:                 Username:            Password:')
-                    for infos in range(len(full_details)):
-                        print(f'    {str(int(infos) + 1)}.  ' + full_details[infos][0] + ' ' * (26 - len(full_details[infos][0])) + full_details[infos][1] + ' ' * (21 - len(full_details[infos][1])) + full_details[infos][2])
+                    if len(full_details) > 0:
+                        print('\n           Websites:                 Username:            Password:')
+                        for infos in range(len(full_details)):
+                            print(' ' * (8 - len(str(infos + 1))) + f'{str(int(infos + 1))}.  ' + full_details[infos][0] + ' ' * (26 - len(full_details[infos][0])) + full_details[infos][1] + ' ' * (21 - len(full_details[infos][1])) + full_details[infos][2])
 
-                    print('\n    Actions that can be performed:\n    1. Remove login details by line number, usage: "!a (number for website)"')
-                    read_menu_commands = input('\n    Enter your command >> ')
-                    # Bulk delete items in login details:
-                    if read_menu_commands.startswith('!del '):
-                        numbers = read_menu_commands.replace('!del ','').strip(' ').split(' ')
-                        for i in range(len(numbers)):
-                            numbers[i] = int(numbers[i]) - 1
+                        print('\n\n    Actions that can be performed, without the brackets:\n    1. To leave this page, use: !end\n    2. Remove login details by line number, usage: !del (number for website)\n    3. Change login details by line number, usage: !change (number) (website) (username) (password)\n')
+                        read_menu_commands = input('\n    Enter your command >> ')
+                        if '!end' in read_menu_commands:
+                            clean()
+                            print('\n    User closed login details view')
+                            return
+
+                        # Bulk delete items in login details:
+                        elif read_menu_commands.startswith('!del '):
+                            numbers = read_menu_commands.replace('!del ','').strip(' ').split(' ')
+                            for i in range(len(numbers)):
+                                numbers[i] = int(numbers[i]) - 1
+                            
+                            del_line(numbers)
                         
-                        del_line(numbers)
-                else:
-                    f_account.close()
-                    clean()
-                    print('\n    * You do not have stored login details in your files')
-                    break
+                        # change login details by line number:
+                        elif read_menu_commands.startswith('!change '):
+                            inform = read_menu_commands.replace('!change ','').strip(' ').split(' ')
+                            if len(inform) == 4:
+                                change_line(inform)
+                            else:
+                                print('\n    You need to enter at least three values!\n    Example: !change (number) (website) (username) (password)')
+
+                        else:
+                            clean()
+                            print('\n    That was an invalid command!')
+                            time.sleep(1)
+                    else:
+                        f_account.close()
+                        clean()
+                        print('\n    * You do not have stored login details in your files')
+                        break
 
     else:
         clean()
