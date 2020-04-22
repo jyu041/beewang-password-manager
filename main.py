@@ -1,4 +1,4 @@
-# main.py - Version 3
+# main.py - Version 4
 # Login/register to store logins and passwords for websites
 # Bee.Wang, 21 April 2020
 
@@ -9,6 +9,9 @@ import string, os, sys, hashlib, base64, time, random
 no_option_list = ['There is no such option avaliable, please enter again!','You have entered an invalid option, please try again!','Your option is invalid, please enter again!','There is no option for what you have entered, try again!']
 user_access_granted = False
 can_log_in = False
+
+# Below here is the windows title, this can be changed anytime
+windows_title = 'BeeWang Password Manager' 
 
 # Uses world grade MD5 encryption to encrypt data througout the program
 def encrypt(item_to_encrypt):
@@ -25,18 +28,21 @@ def clean():
 
 # Changes Terminal title for windows users
 def change_title():
-    # This title can be changed by just editing it below here
-    global windows_title
-    windows_title = 'BeeWang Password Manager'
-    try:
-        os.system(f'title {windows_title}' if os.name == 'nt' else '\n')
-    except:
-        pass
+    os.system(f'title {windows_title}' if os.name == 'nt' else '\n')
+
 
 def exit_program():
-    #clean()
     print(f'\n    Thank you for using {windows_title}, you can close this window now')
     sys.exit()
+
+
+def restart_program():
+    if os.name == 'nt':
+        print('\n    Restarting program...')
+        os.execl(sys.executable, sys.executable, *sys.argv)
+    else:
+        clean()
+        print('\n    Sorry but this function is currently only for windows users')
 
 
 def logout_func(auth_key):
@@ -115,7 +121,11 @@ def register_func():
         print('    ==================================================\n')
         time.sleep(3)
         clean()
-        print(f'\n    Your account: "{login}" has been created!')
+        print(f'\n    Your account: "{login}" has been created! and you have been automatically logged in')
+        global user_access_granted
+        global login_username
+        user_access_granted = True
+        login_username = login
         f_register.close()
 
 
@@ -153,7 +163,7 @@ def login_func():
                         f_login_files.close()
                         break
                     else:
-                        print('\n    The password you have entered does not match the one we have in our data base\n    Plase enter try again')
+                        print('\n    Incorrect Password\n')
             
             if can_log_in == True:
                 user_access_granted = True
@@ -164,11 +174,11 @@ def login_func():
         else:
             print(f'\n    * You have already logged in to "{login_username}", you do not need to login again')
             logout_func(user_access_granted)
+
+        return login_username
     else:
         clean()
         print('\n    * Sorry but there are currently no accounts registered, please register an account first before coming')
-    
-    return login_username
 
 
 # This encoding function encodes the user data in base64, and then returns it
@@ -177,14 +187,14 @@ def data_encode(encodedStr):
         encodedStr = str(base64.b64encode(encodedStr.encode("utf-8")), "utf-8")
     return str(encodedStr)
 
-
-def data_decode(decodeStr):
+# This decoding functions decodes the encrypted data and then returns it
+def data_decode(decodedStr):
     for i in range(8):
         decodedStr = base64.b64decode(decodedStr).decode("utf-8")
     return str(decodedStr)
 
 
-def store_password(auth_key):
+def store_details(auth_key):
     if auth_key:
         if os.path.isdir('./users') == False:
             os.mkdir('./users')
@@ -192,30 +202,94 @@ def store_password(auth_key):
 
         f_account = open(f'./users/{encrypt(login_username)}','a+')
         written_amount = []
+        print('\n    You can store your logins and passwords here!\n    Note that this process could be slow, because it is encrypting your data\n    Type "!end" to stop entering login details\n')
         while True:
-            print('\n    You can store your logins and passwords here!\n    Note that this process could be slow, because it is encrypting your data\n    Type "!end" to stop entering login details\n')
             store_site = str(input('    Website to store for >> '))
-            if store_site != '!end':
-                encoded_store_site = data_encode(store_site)
-                store_user = data_encode(str(input('    Username to store for >> ')))
-                store_pwd = data_encode(str(input('    Password to store for >> ')))
-                f_account.write(f'{encoded_store_site}<>{store_user}<>{store_pwd}\n')
-                written_amount.append('x')
-            else:
-                clean()
-                if len(written_amount) == 0:
-                    print('\n    You have cancelled to store any login details')
-                elif len(written_amount) == 1:
-                    print(f'\n    You have stored {len(written_amount)} login detail')
-                else:
-                    print(f'\n    You have stored {len(written_amount)} login detail')
-                
+            if store_site == '!end':
                 break
+
+            store_user = str(input('    Username to store for >> '))
+            if store_user == '!end':
+                break
+
+            store_pwd = str(input('    Password to store for >> '))
+            if store_pwd == '!end':
+                break
+
+            encoded_store_site = data_encode(store_site)
+            encoded_store_user = data_encode(store_user)
+            encoded_store_pwd = data_encode(store_pwd)
+            f_account.write(f'{encoded_store_site}<>{encoded_store_user}<>{encoded_store_pwd}\n')
+            written_amount.append('x')
+            print('\n    Details Stored Successfuly\n')
+
+        clean()
+        if len(written_amount) == 0:
+            print('\n    You have cancelled to store any login details')
+        elif len(written_amount) == 1:
+            print(f'\n    You have stored {len(written_amount)} login detail')
+        else:
+            print(f'\n    You have stored {len(written_amount)} login detail')
+
         f_account.close()
     else:
         clean()
-        print('\n    * You are not logged in, you must log in to store passwords privately!')
+        print('\n    * You are not logged in, you must log in to store login details privately!')
 
+
+def del_line(line_item):
+    written_lines = []
+    with open(f'./users/{encrypt(login_username)}', "r") as f:
+        lines = f.readlines()
+    with open(f'./users/{encrypt(login_username)}', "w") as f:
+        for line in lines:
+            if len(written_lines) == 0:
+                if not line.strip("\n").startswith(line_item):
+                    f.write(line)
+                else:
+                    written_lines.append('x')
+            else:
+                f.write(line)
+
+
+def read_details(auth_key):
+    if auth_key:
+        while True:
+            if os.path.isdir('./users') == False:
+                print('\n    The program have detected that the folder that stores all \n    encrypted details has been deleted, all lost data cannot be\n    recovered using this program, but the missing files to run\n    this program has been re-created, please continue freely,\n    if you know what is happening you may ignore this message')
+            elif os.path.isfile(f'./users{encrypt(login_username)}') == False:
+                print('\n    The file that stores the login details for current account\n    does not exist or has been deleted, information lost can not\n    be recovered, we are very sorry for what has happened to \n    your data, if you know what is happening you may ignore  \n    this message and continue, also that the missing file has been \nrecreated but will be empty until you start to store information inside it')
+            else:
+                clean()
+                print('    Your login details are displayed below:')
+                f_account = open(f'./users/{encrypt(login_username)}','r')
+                full_details = []
+                for lines in f_account:
+                    line_info = lines.split('<>')
+                    line_detail = []
+                    for details in line_info:
+                        line_detail.append(data_decode(details))
+                    full_details.append(line_detail)
+
+                if len(full_details) > 0:
+                    print('\n        Websites:                 Username:            Password:')
+                    for infos in range(len(full_details)):
+                        print(f'    {str(int(infos) + 1)}.  ' + full_details[infos][0] + ' ' * (26 - len(full_details[infos][0])) + full_details[infos][1] + ' ' * (21 - len(full_details[infos][1])) + full_details[infos][2])
+
+                    print('\n    Actions that can be performed:\n    1. Remove login details by line number, usage: "!a (number for website)"')
+                    read_menu_commands = input('\n    Enter your command >> ')
+                    if read_menu_commands.startswith('!a '):
+                        numbers = read_menu_commands.replace('!a ','').strip(' ').split(' ')
+                        temp_line = data_encode(str(full_details[int(numbers[0]) - 1][0]))
+                        print(f'    Attempt to delete line "{int(numbers[0])}" gave a response of "{del_line(temp_line)}"')
+                else:
+                    f_account.close()
+                    print('\n    You do not have stored login details in your files')
+
+    else:
+        clean()
+        print('\n    * You are not logged in, you must log in to read stored login details!')
+        
 
 def menu():
     clean()
@@ -225,9 +299,11 @@ def menu():
 
                       1.  Registering an account
                       2.  Logging in to an account
-                      3.  Store Password (Requires Login)
-                      4.  Log out from your account
-                      5.  Close Program
+                      3.  Store login details (Requires Login)
+                      4.  Retrieve login details (Requires Login)
+                      5.  Log out from your account
+                      6.  Close Program
+                      7.  Restart Program
 
     =====================================================================
         (Please select an option by entering the corresponding number)
@@ -240,11 +316,15 @@ def menu():
         elif menu_choice == '2':
             login_func()
         elif menu_choice == '3':
-            store_password(user_access_granted)
+            store_details(user_access_granted)
         elif menu_choice == '4':
-            logout_func(user_access_granted)
+            read_details(user_access_granted)
         elif menu_choice == '5':
+            logout_func(user_access_granted)
+        elif menu_choice == '6':
             exit_program()
+        elif menu_choice == '7':
+            restart_program()
         else:
             clean()
             print(f'\n    * {random.choice(no_option_list)}')
