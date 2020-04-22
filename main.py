@@ -1,16 +1,20 @@
-# main.py - Version 6
+# main.py - Version 7
 # Login/register to store logins and passwords for websites
 # Bee.Wang, 22 April 2020
 
 
-import string, os, sys, hashlib, base64, time, random
+import string, os, sys, hashlib, base64, time, random, math
 
+# Useless thing just to make the restart look cooler
 print('    ' + str(sys.argv))
 
 # Variables to be declared at the start of the program when it runs for some default values
 no_option_list = ['There is no such option avaliable, please enter again!','You have entered an invalid option, please try again!','Your option is invalid, please enter again!','There is no option for what you have entered, try again!']
 user_access_granted = False
 can_log_in = False
+
+encoding_power_low = 8 # ONLY CHANGE THIS WHEN THERE ARENT ACCOUNTS REGISTERED, THIS VALUE MUST NOT EXCEED 62
+encoding_power = 16 # ONLY CHANGE THIS WHEN THERE ARENT ACCOUNTS REGISTERED
 
 # Default settings for some visuals and support functions
 auto_login_after_register = True # Change this to false if you would want to disable auto login after register
@@ -20,10 +24,17 @@ windows_title = 'BeeWang-Password-Manager' # Windows Only
 
 # Uses world grade MD5 encryption to encrypt data througout the program
 def encrypt(item_to_encrypt):
-    for i in range(8):
+    encodement = list(item_to_encrypt * encoding_power)
+    for i in range(encoding_power):
         print(f'    Encrypting pass: {i+1}', end='\r')
+        """
         item_to_encrypt = hashlib.md5(item_to_encrypt.encode())
         item_to_encrypt = str(item_to_encrypt.hexdigest())
+        """
+        # Swapping to a new way of hashing, instead of MD5, uses SHA512
+        # This makes old accounts not being able to work this this version
+        item_to_encrypt = str(hashlib.sha512(item_to_encrypt.encode()).hexdigest()) + encodement[int(len(encodement) / int(math.sqrt(len(encodement))))]
+        #item_to_encrypt = str(item_to_encrypt)
     print('                                             ', end='\r')
     return str(item_to_encrypt)
 
@@ -39,8 +50,6 @@ def exit_program():
 
 
 def restart_program():
-    #os.execv(__file__, sys.argv)
-    #os.execv(__file__, ['restart'])
     print("\n    argv was", sys.argv)
     print("    sys.executable was", sys.executable)
     print("    restarting now")
@@ -56,8 +65,8 @@ def auto_settings():
 
 # This encoding function encodes the user data in base64, and then returns it
 def data_encode(encodedStr):
-    for i in range(8):
-        print(f'    Encoding process count: {i+1}', end='\r')
+    for i in range(encoding_power_low):
+        print(f'    Encoding process : {str(((i+1) / encoding_power_low) * 100)}%', end='\r')
         encodedStr = str(base64.b64encode(encodedStr.encode("utf-8")), "utf-8")
     print('                                             ', end='\r')
     return str(encodedStr)
@@ -65,8 +74,8 @@ def data_encode(encodedStr):
 
 # This decoding functions decodes the encrypted data and then returns it
 def data_decode(decodedStr):
-    for i in range(8):
-        print(f'    Decoding process count: {i+1}', end='\r')
+    for i in range(encoding_power_low):
+        print(f'    Decoding process : {str(((i+1) / encoding_power_low) * 100)}%', end='\r')
         decodedStr = base64.b64decode(decodedStr).decode("utf-8")
     print('                                             ', end='\r')
     return str(decodedStr)
@@ -98,7 +107,6 @@ def logout_func(auth_key):
 
 def register_func():
     # These two lines outside of the with is to create the file "accounts.txt" if it doesnt exist
-    #f_register = open('accounts.txt','a+')
     with open('accounts.txt','a+') as f_register:
         f_register.close()
     with open('accounts.txt','r+') as f_register:
@@ -140,7 +148,6 @@ def register_func():
             print('    Account already exists in file directories!')
         else:
             print('    Creating files for current user!')
-            #acc_f = open(f'./users/{encrypt(login)}','a+')
             with open(f'./users/{encrypt(login)}','a+') as acc_f:
                 if os.path.isfile(f'./users/{encrypt(login)}'):
                     print('\n    Succesfully created')
@@ -158,12 +165,13 @@ def register_func():
             login_username = login
             print(f'\n    Your account: "{login}" has been created! and you have been automatically logged in')
         else:
+            user_access_granted = False
             print('\n    Auto login has been disabled, you may change this in the settings options')
         f_register.close()
 
 
 def login_func():
-    if os.path.isfile('accounts.txt'):
+    if os.path.isfile('accounts.txt') and os.stat('accounts.txt').st_size != 0:
         global user_access_granted
         global login_username
         if user_access_granted == False:
@@ -217,6 +225,38 @@ def login_func():
         clean()
         print('\n    * Sorry but there are currently no accounts registered, please register an account first before coming')
 
+
+def delete_acc(auth_key):
+    if auth_key:
+        global user_access_granted
+        clean()
+        print('\n    Are you sure you want to delete your account?!\n    All stored data for your account will be un-recoverable after current action!')
+        confirm_del = input('\n    Confirm by entering your password: ')
+        with open('accounts.txt','r') as check_account:
+            for lines in check_account:
+                if lines.startswith(f'{encrypt(login_username)}'):
+                    if encrypt(confirm_del) == str(lines.split(':')[1].rstrip('\n')):
+                        with open('accounts.txt','w') as del_account:
+                            for lines in check_account:
+                                if lines.startswith(f'{encrypt(login_username)}'):
+                                    pass
+                                else:
+                                    del_account.write(lines)
+                        if os.path.isfile(f'./users/{encrypt(login_username)}'):
+                            os.remove(f'./users/{encrypt(login_username)}')
+                            clean()
+                            user_access_granted = False
+                            print(f'\n    Your account, [{login_username}], and data associated with has been removed')
+                    else:
+                        clean()
+                        print('\n    INCORRECT PASSWORD, RETURNING TO HOMESCREEN')
+                        return
+                
+
+
+    else:
+        print('\n    You cannot delete any accounts without being logged in')
+        return
 
 
 def store_details(auth_key):
@@ -376,8 +416,9 @@ def menu():
                       3.  Store login details (Requires Login)
                       4.  Retrieve login details (Requires Login)
                       5.  Log out from your account
-                      6.  Close Program
-                      7.  Restart Program
+                      6.  Delete Account (Caution)
+                      7.  Close Program
+                      8.  Restart Program
 
     =====================================================================
         (Please select an option by entering the corresponding number)
@@ -396,8 +437,10 @@ def menu():
         elif menu_choice == '5':
             logout_func(user_access_granted)
         elif menu_choice == '6':
-            exit_program()
+            delete_acc(user_access_granted)
         elif menu_choice == '7':
+            exit_program()
+        elif menu_choice == '8':
             restart_program()
         else:
             clean()
