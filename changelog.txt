@@ -1,3 +1,12 @@
+23/April/2020 - Version 8:
+ - Fixed error when viewing login details after deleting it out of the program
+ - Added function to store logins publicly
+ - View publicly stored logins
+ - Remove publicly stored logins function added
+ - Re-created the main menu for easier access
+ - Sorted Variables at start up for other coders change easily
+ - Minor changes
+
 22/April/2020 - Version 7:
 
  - Minor changes
