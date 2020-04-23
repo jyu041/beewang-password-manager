@@ -1,4 +1,4 @@
-# main.py - Version 8
+# main.py - Fix 8.1
 # Login/register to store logins and passwords for websites
 # Bee.Wang, 23 April 2020
 
@@ -6,10 +6,11 @@
 # CUSTOMIZABLE SETTINGS ========================================================================================
 encoding_power_low = 8 # ONLY CHANGE THIS WHEN THERE ARENT ACCOUNTS REGISTERED, THIS VALUE MUST NOT EXCEED 62
 encoding_power = 16 # ONLY CHANGE THIS WHEN THERE ARENT ACCOUNTS REGISTERED
+# Changing the above two values would result in old login details and accounts not being able to work properly
 
 # Default settings for some visuals and support functions
 auto_login_after_register = True # Change this to false if you would want to disable auto login after register
-console_color = '0b' # Windows Only
+console_color = '0b' # Windows Only, you may play around with this color code to get different color themes in your console
 windows_title = 'BeeWang-Password-Manager' # Windows Only
 # ==============================================================================================================
 
@@ -23,7 +24,6 @@ print('    ' + str(sys.argv))
 no_option_list = ['There is no such option avaliable, please enter again!','You have entered an invalid option, please try again!','Your option is invalid, please enter again!','There is no option for what you have entered, try again!']
 user_access_granted = False
 can_log_in = False
-
 
 
 # Uses world grade MD5 encryption to encrypt data througout the program
@@ -497,15 +497,19 @@ def view_public():
 
 def del_public(auth_key):
     if auth_key:
-        print('\n    You are about to delete the file the stores public keys, are you sure you want to delete them all!?')
-        del_pub_con = input('    Please confirm (Y:N) >> ').lower()
-        if del_pub_con == 'y':
-            os.remove('./users/publiclogins')
-            clean()
-            print('\n    All Publicly stored Login details have been removed!')
+        if os.path.isfile('./users/publiclogins'):
+            print('\n    You are about to delete the file the stores public keys, are you sure you want to delete them all!?')
+            del_pub_con = input('    Please confirm (Y:N) >> ').lower()
+            if del_pub_con == 'y':
+                os.remove('./users/publiclogins')
+                clean()
+                print('\n    All Publicly stored Login details have been removed!')
+            else:
+                clean()
+                print('\n    Cancelled to delete publicly stored login details, returned to main menu')
         else:
             clean()
-            print('\n    Cancelled to delete publicly stored login details, returned to main menu')
+            print('\n    There are currently no stored public login details')
     else:
         clean()
         print('\n    You must login first before being able to remove public login details')

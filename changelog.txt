@@ -1,3 +1,7 @@
+23/April/2020 - Fix 8.1:
+ 
+ - Fixed bug that crashes the software when the file that stores public logins are missing
+
 23/April/2020 - Version 8:
  - Fixed error when viewing login details after deleting it out of the program
  - Added function to store logins publicly
