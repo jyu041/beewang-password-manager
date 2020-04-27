@@ -7,13 +7,11 @@ The BeeWang-Password-Manager password manager is a python console based software
 # Requirements:
 This software was mainly tested in Windows Python 3.7.3, it is not guranteed that this software can be ran in different environments. 
 Uses the following libraries:
- - string
  - os
  - sys
  - hashlib
  - base64
  - time
- - math
  - random (not used at all but i forgot to remove)
  
  Internet is **not** required for the software to run
