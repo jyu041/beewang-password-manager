@@ -1,6 +1,6 @@
-# main.py - Fix 8.1
+# main.py - Version9
 # Login/register to store logins and passwords for websites
-# Bee.Wang, 23 April 2020
+# Bee.Wang, 24 April 2020
 
 
 # CUSTOMIZABLE SETTINGS ========================================================================================
@@ -15,7 +15,7 @@ windows_title = 'BeeWang-Password-Manager' # Windows Only
 # ==============================================================================================================
 
 
-import string, os, sys, hashlib, base64, time, random, math
+import os, sys, hashlib, base64, time
 
 # Useless thing just to make the restart look cooler
 print('    ' + str(sys.argv))
@@ -24,22 +24,14 @@ print('    ' + str(sys.argv))
 no_option_list = ['There is no such option avaliable, please enter again!','You have entered an invalid option, please try again!','Your option is invalid, please enter again!','There is no option for what you have entered, try again!']
 user_access_granted = False
 can_log_in = False
+encyrption_salt = 'mysuperdupercantbeguessedsecretsaltkey' # A salt key for the encryption process
 
 
-# Uses world grade MD5 encryption to encrypt data througout the program
+# Uses world grade SHA512 encryption to encrypt data througout the program
 def encrypt(item_to_encrypt):
-    encodement = list(item_to_encrypt * encoding_power)
+    item_to_encrypt = item_to_encrypt + encyrption_salt
     for i in range(encoding_power):
-        print(f'    Encrypting pass: {i+1}', end='\r')
-        """
-        item_to_encrypt = hashlib.md5(item_to_encrypt.encode())
-        item_to_encrypt = str(item_to_encrypt.hexdigest())
-        """
-        # Swapping to a new way of hashing, instead of MD5, uses SHA512
-        # This makes old accounts not being able to work this this version
-        item_to_encrypt = str(hashlib.sha512(item_to_encrypt.encode()).hexdigest()) + encodement[int(len(encodement) / int(math.sqrt(len(encodement))))]
-        #item_to_encrypt = str(item_to_encrypt)
-    print('                                             ', end='\r')
+        item_to_encrypt = str(hashlib.sha512(item_to_encrypt.encode()).hexdigest())
     return str(item_to_encrypt)
 
 
@@ -259,6 +251,7 @@ def delete_acc(auth_key):
 
 
     else:
+        clean()
         print('\n    You cannot delete any accounts without being logged in')
         return
 
