@@ -1,4 +1,9 @@
+27/April/2020 - Fix 9.1
+ 
+ - FIXED RANDOM MODULE
+
 27/April/2020 - Fix 9:
+ 
  - Minor Changes
 
 23/April/2020 - Fix 8.1:

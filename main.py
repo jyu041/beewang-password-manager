@@ -15,7 +15,7 @@ windows_title = 'BeeWang-Password-Manager' # Windows Only
 # ==============================================================================================================
 
 
-import os, sys, hashlib, base64, time
+import os, sys, hashlib, base64, time, random
 
 # Useless thing just to make the restart look cooler
 print('    ' + str(sys.argv))
