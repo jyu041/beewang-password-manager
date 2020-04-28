@@ -12,7 +12,7 @@ Uses the following libraries:
  - hashlib
  - base64
  - time
- - random (not used at all but i forgot to remove)
+ - random
  
  Internet is **not** required for the software to run
  
