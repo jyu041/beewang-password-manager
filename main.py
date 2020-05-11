@@ -117,7 +117,7 @@ def register_func():
                 print('\n    * You have cancelled to register an acocunt!')
                 return
             elif len(login) < 5:
-                print(f'\n    * Your username is not long enough, it must be atleast 8 (eight) digits long\n    * You have entered {len(login)} digits')
+                print(f'\n    * Your username is not long enough, it must be at least 5 (five) digits long\n    * You have entered {len(login)} digits')
             elif login.isalnum():
                 break
             else:
@@ -291,7 +291,7 @@ def store_details(auth_key):
                     encoded_store_pwd = data_encode(store_pwd)
                     f_account.write(f'{encoded_store_site}<>{encoded_store_user}<>{encoded_store_pwd}\n')
                     written_amount.append('x')
-                    print('\n    Details Stored Successfuly\n')
+                    print('\n    Details Stored successfully\n')
 
         clean()
         if len(written_amount) == 0:
@@ -451,7 +451,7 @@ def store_public():
             encoded_store_pwd = data_encode(store_pwd)
             public_write.write(f'{encoded_store_site}<>{encoded_store_user}<>{encoded_store_pwd}\n')
             written_amount.append('x')
-            print('\n    Details Stored Successfuly\n')
+            print('\n    Details Stored successfully\n')
 
     clean()
     if len(written_amount) == 0:
