@@ -1,0 +1,61 @@
+22/April/2020 - Version 7:
+
+ - Minor changes
+ - Using SHA512 hashing instead of MD5 hashing for more safety
+ - Added new function to delete account and data with it
+ - Changed Menu visuals
+
+22/April/2020 - Version 6:
+
+ - Added new change login details function (Major!) (This took me so f**king long)
+ - Limited user login details storage to 9999 lines of information
+ - Minor bug fixes
+ - Changed strings and comments in code for better understanding
+
+22/April/2020 - Version 5:
+
+ - Minor bug fixes
+ - Changed the restart function
+ - Can now bulk delete stored login details 
+ - Attempeted to create single user preferrences (removed, because was too hard)
+
+21/April/2020 - Version 4:
+ - Created function to read stored login details
+ - Created funtciton to delete login details
+ - Created function for user to restart the program(currently windows only)
+ - Created function for user to exit the program on main menu
+ - Automatically changes console title to a set name in the code (currently windows only)
+ - More file integrity detection
+ - Minor changes to strings for information towards users
+
+21/April/2020 - Version 3:
+
+ - Made the storing data function ready to work
+ - Added base64 encryption function
+ - Added base64 decryption function
+ - Added file integrity detection inside storing data function (this could be changed and improved)
+ - Minor changes within strings to inform user correctly
+
+21/April/2020 - Version 2:
+
+ - Created log out function
+ - Windows users could customize console title
+ - Changed program function visiuals
+ - Small changes in strings to tell user informations
+ - Started password storing funciton
+ - User must login to store passwords
+ - User can't login when no user information are in the directory
+ - User can't log out when not logged in
+ - User can cancel the register process by typing 'end'
+ - Added clean function to clean screen
+ - When user enters invalid option in main menu, it chooses a random response from a list to inform the user that they typed something invalid
+ - Added function to close program at main menu
+ - Shorten Regsiter function by using utilizing parameters and arguments
+
+
+20/April/2020 - Version 1:
+
+ - Created register function
+ - Created login function
+ - Created option menu
+ - Created encryption function
