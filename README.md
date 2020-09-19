@@ -5,7 +5,7 @@ practice-assessment-2-password-manager-jyu041 created by GitHub Classroom
 The BeeWang-Password-Manager password manager is a python console based software that allows multiple users to store their login details for different websites they visit, each user can store up to nine-thousand nine-hundred and ninety nine login details, once that fills up, the users would need to make a new account(I don't think anyone would have 9999 accounts anyway)
 
 # Requirements:
-This software was mainly tested in Windows Python 3.7.3, it is not guranteed that this software can be ran in different environments. 
+This software was mainly tested in Windows Python 3.8.5, it is not guranteed that this software can be ran in different environments. 
 Uses the following libraries:
  - os
  - sys
@@ -13,8 +13,9 @@ Uses the following libraries:
  - base64
  - time
  - random
+ - secrets
+ - cryptography
  
- Internet is **not** required for the software to run
  
  # Notes:
  This software took me few whole days to code, please be polite and not claim it as your own xD
