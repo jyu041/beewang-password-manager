@@ -1,18 +1,53 @@
-# main.py - Version9
+# main.py - Version10
 # Login/register to store logins and passwords for websites
-# Bee.Wang, 24 April 2020
+# Bee.Wang, 20 September 2020
 
-
-# CUSTOMIZABLE SETTINGS ========================================================================================
-encoding_power_low = 8 # ONLY CHANGE THIS WHEN THERE ARENT ACCOUNTS REGISTERED, THIS VALUE MUST NOT EXCEED 62
-encoding_power = 16 # ONLY CHANGE THIS WHEN THERE ARENT ACCOUNTS REGISTERED
-# Changing the above two values would result in old login details and accounts not being able to work properly
 
 # Default settings for some visuals and support functions
 auto_login_after_register = True # Change this to false if you would want to disable auto login after register
 console_color = '0b' # Windows Only, you may play around with this color code to get different color themes in your console
 windows_title = 'BeeWang-Password-Manager' # Windows Only
 # ==============================================================================================================
+
+
+# ============================================================================================================================
+from base64 import urlsafe_b64encode as b64e, urlsafe_b64decode as b64d
+
+from cryptography.fernet import Fernet
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+import secrets
+
+backend = default_backend()
+iterations = 100_000
+
+def _derive_key(password: bytes, salt: bytes, iterations: int = iterations) -> bytes:
+    """Derive a secret key from a given password and salt"""
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(), length=32, salt=salt,
+        iterations=iterations, backend=backend)
+    return b64e(kdf.derive(password))
+
+def password_encrypt(message: bytes, password: str, iterations: int = iterations) -> bytes:
+    salt = secrets.token_bytes(16)
+    key = _derive_key(password.encode(), salt, iterations)
+    return str(b64e(
+        b'%b%b%b' % (
+            salt,
+            iterations.to_bytes(4, 'big'),
+            b64d(Fernet(key).encrypt(message)),
+        )
+    ))[2:][:-1]
+
+def password_decrypt(token: bytes, password: str) -> bytes:
+    decoded = b64d(token)
+    salt, iter, token = decoded[:16], decoded[16:20], b64e(decoded[20:])
+    iterations = int.from_bytes(iter, 'big')
+    key = _derive_key(password.encode(), salt, iterations)
+    return str(Fernet(key).decrypt(token))[2:][:-1]
+# ============================================================================================================================
 
 
 import os, sys, hashlib, base64, time, random
@@ -30,8 +65,7 @@ encyrption_salt = 'mysuperdupercantbeguessedsecretsaltkey' # A salt key for the 
 # Uses world grade SHA512 encryption to encrypt data througout the program
 def encrypt(item_to_encrypt):
     item_to_encrypt = item_to_encrypt + encyrption_salt
-    for i in range(encoding_power):
-        item_to_encrypt = str(hashlib.sha512(item_to_encrypt.encode()).hexdigest())
+    item_to_encrypt = str(hashlib.sha512(item_to_encrypt.encode()).hexdigest())
     return str(item_to_encrypt)
 
 
@@ -61,20 +95,14 @@ def auto_settings():
 
 # This encoding function encodes the user data in base64, and then returns it
 def data_encode(encodedStr):
-    for i in range(encoding_power_low):
-        print(f'    Encoding process : {str(((i+1) / encoding_power_low) * 100)}%', end='\r')
-        encodedStr = str(base64.b64encode(encodedStr.encode("utf-8")), "utf-8")
-    print('                                             ', end='\r')
-    return str(encodedStr)
+    global login_password
+    return(password_encrypt(encodedStr.encode(), login_password))
 
 
 # This decoding functions decodes the encrypted data and then returns it
 def data_decode(decodedStr):
-    for i in range(encoding_power_low):
-        print(f'    Decoding process : {str(((i+1) / encoding_power_low) * 100)}%', end='\r')
-        decodedStr = base64.b64decode(decodedStr).decode("utf-8")
-    print('                                             ', end='\r')
-    return str(decodedStr)
+    global login_password
+    return(password_decrypt(decodedStr.encode(), login_password))
 
 
 def logout_func(auth_key):
@@ -127,6 +155,8 @@ def register_func():
             password = str(input('    Enter your password here >> '))
             confirm_password = str(input('    Confirm your password here >> '))
             if password == confirm_password:
+                global login_password
+                login_password = confirm_password
                 break
             else:
                 print('    Your entered password do not match! Please enter it correctly\n')
@@ -197,6 +227,7 @@ def login_func():
             # Password Part of login below
             while True:
                 with open('accounts.txt','r') as f_login_files:
+                    global login_password
                     login_password = str(input('    Password >> '))
                     extracted_password = str(save_login_details_hashed[0].split(':')[1].rstrip('\n'))
                     if encrypt(login_password) == extracted_password:
